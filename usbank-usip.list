@@ -1,0 +1,42 @@
+# NAME: USBank
+# AUTHOR: devinqiu888
+# REPO: https://github.com/devinqiu888/USBANKS-rules
+# UPDATED: 2025-03-05 11:04:49
+# DOMAIN: 0
+# DOMAIN-SUFFIX: 13
+# TOTAL: 13
+DOMAIN-SUFFIX,creditkarma.com
+DOMAIN-SUFFIX,online-metrix.net
+DOMAIN-SUFFIX,experian.com
+DOMAIN-SUFFIX,equifax.com
+DOMAIN-SUFFIX,capitalone.com
+DOMAIN-SUFFIX,medallia.com
+DOMAIN-SUFFIX,newrelic.com
+DOMAIN-SUFFIX,intuit.com
+DOMAIN-SUFFIX,annualcreditreport.com
+DOMAIN-SUFFIX,experian.com
+DOMAIN-SUFFIX,chase.com
+DOMAIN-SUFFIX,chasecdn.com
+DOMAIN-SUFFIX,nr-data.net
+DOMAIN,ck-assets.imgix.net
+DOMAIN,creditkarmacdn-a.akamaihd.net
+DOMAIN,ck-content.imgix.net
+DOMAIN-SUFFIX,experian.com
+DOMAIN-SUFFIX,myfico.com
+DOMAIN-SUFFIX,nextinsure.com
+DOMAIN-SUFFIX,qualaroo.com
+DOMAIN-SUFFIX,apigateway.bnymellon.com
+DOMAIN-SUFFIX,fidelitydebitcard.com
+DOMAIN-SUFFIX,fidelity.com
+DOMAIN-SUFFIX,pool.ntp.org
+DOMAIN-SUFFIX,veriff.me
+DOMAIN-SUFFIX,us.sentry.io
+DOMAIN-SUFFIX,transunion.com
+DOMAIN-SUFFIX,us.veriff.me
+DOMAIN-SUFFIX,optimizely.com
+DOMAIN-SUFFIX,datadoghq-browser-agent.com
+DOMAIN-SUFFIX,typicode.com
+DOMAIN-SUFFIX,icanhazip.com
+DOMAIN-SUFFIX,customer.io
+DOMAIN-SUFFIX,pokeapi.co
+DOMAIN-SUFFIX,joinfizz.com
