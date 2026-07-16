@@ -48,3 +48,5 @@ payload:
   - DOMAIN-SUFFIX,epdg.epc.att.net
   - DOMAIN-SUFFIX,epdg.epc.att-idns.net
   - DOMAIN-SUFFIX,loc.apple.com
+  - DOMAIN,gs-loc-cn.apple.com
+  - DOMAIN,gs-loc.apple.com
