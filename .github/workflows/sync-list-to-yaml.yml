@@ -1,0 +1,49 @@
+name: Sync clash ruleset
+on:
+  push:
+    paths:
+      - 'Clash/**/*.list'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Process .list changes
+        run: |
+          # 取出本次变动的 .list 文件
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD -- 'Clash/*.list' 'Clash/**/*.list' || true)
+          echo "Changed files: $CHANGED_FILES"
+
+          for f in $CHANGED_FILES; do
+            BASENAME=$(basename "$f" .list)
+            PROVIDERS_DIR="Clash/Providers"
+            RULESET_DIR="$PROVIDERS_DIR/Ruleset"
+            mkdir -p "$PROVIDERS_DIR" "$RULESET_DIR"
+
+            # 判断文件是否存在来决定是增/改还是删
+            if [ -f "$f" ]; then
+              echo "Processing added/modified: $f"
+              for target in "$PROVIDERS_DIR/${BASENAME}.yaml" "$RULESET_DIR/${BASENAME}.yaml"; do
+                echo "payload:" > "$target"
+                sed 's/^/  - /' "$f" >> "$target"
+              done
+            else
+              echo "Processing deleted: $f"
+              rm -f "$PROVIDERS_DIR/${BASENAME}.yaml" "$RULESET_DIR/${BASENAME}.yaml"
+            fi
+          done
+
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Clash/Providers/ Clash/Providers/Ruleset/
+          git diff --staged --quiet || git commit -m "Auto sync .yaml from .list changes" && git push
