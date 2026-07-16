@@ -11,8 +11,10 @@ DOMAIN-SUFFIX,newrelic.com
 DOMAIN-SUFFIX,intuit.com
 DOMAIN-SUFFIX,annualcreditreport.com
 DOMAIN-SUFFIX,experian.com
+# chase
 DOMAIN-SUFFIX,chase.com
 DOMAIN-SUFFIX,chasecdn.com
+
 DOMAIN-SUFFIX,nav.com
 DOMAIN-SUFFIX,nr-data.net
 DOMAIN,ck-assets.imgix.net
@@ -59,9 +61,12 @@ DOMAIN-SUFFIX,ntp.org
 DOMAIN-SUFFIX,transmitsecurity.io
 DOMAIN-SUFFIX,soficdn.net
 DOMAIN-SUFFIX,online-metrix.net
+# American Express
 DOMAIN-SUFFIX,americanexpress.com
 DOMAIN-SUFFIX,aexp-static.com
 DOMAIN-SUFFIX,amextravel.com
+DOMAIN-SUFFIX,sentry.io
+
 DOMAIN-SUFFIX,hsbc.com
 DOMAIN-SUFFIX,firstdata.com
 DOMAIN-SUFFIX,stripe.com
