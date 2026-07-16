@@ -15,8 +15,10 @@ DOMAIN-SUFFIX,newrelic.com
 DOMAIN-SUFFIX,intuit.com
 DOMAIN-SUFFIX,annualcreditreport.com
 DOMAIN-SUFFIX,experian.com
+# chase
 DOMAIN-SUFFIX,chase.com
 DOMAIN-SUFFIX,chasecdn.com
+
 DOMAIN-SUFFIX,nav.com
 DOMAIN-SUFFIX,nr-data.net
 DOMAIN,ck-assets.imgix.net
