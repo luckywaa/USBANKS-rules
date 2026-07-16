@@ -1,4 +1,6 @@
 name: Sync clash ruleset
+name: Sync Clash/*.list to Providers .yaml
+
 on:
   push:
     paths:
@@ -35,12 +37,15 @@ jobs:
               for target in "$PROVIDERS_DIR/${BASENAME}.yaml" "$RULESET_DIR/${BASENAME}.yaml"; do
                 echo "payload:" > "$target"
                 awk '
+                # 注释行：去除原先行首空白，统一缩进两个空格
                 /^[[:space:]]*#/ {
                   sub(/^[[:space:]]*/, "")
-                  print "  # " $0
+                  print "  " $0
                   next
                 }
+                # 空行直接跳过
                 /^[[:space:]]*$/ { next }
+                # 规则行：转为 YAML list 项
                 { print "  - " $0 }
                 ' "$f" >> "$target"
               done
