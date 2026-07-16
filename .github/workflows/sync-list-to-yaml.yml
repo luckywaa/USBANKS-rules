@@ -30,13 +30,16 @@ jobs:
 
             mkdir -p "$PROVIDERS_DIR" "$RULESET_DIR"
 
-            # 判断文件是存在（新增/修改）还是删除
             if [ -f "$f" ]; then
               echo "Processing add/modify: $f"
               for target in "$PROVIDERS_DIR/${BASENAME}.yaml" "$RULESET_DIR/${BASENAME}.yaml"; do
                 echo "payload:" > "$target"
                 awk '
-                /^[[:space:]]*#/ { print; next }
+                /^[[:space:]]*#/ {
+                  sub(/^[[:space:]]*/, "")
+                  print "  # " $0
+                  next
+                }
                 /^[[:space:]]*$/ { next }
                 { print "  - " $0 }
                 ' "$f" >> "$target"
@@ -53,5 +56,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Clash/Providers/ Clash/Providers/Ruleset/
-          # 若无实际变更则跳过提交，避免报错退出
           git diff --cached --quiet || git commit -m "Auto sync .yaml from Clash/*.list changes" && git push
