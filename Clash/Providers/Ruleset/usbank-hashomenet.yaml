@@ -59,3 +59,4 @@ payload:
   - DOMAIN-SUFFIX,amextravel.com
   - DOMAIN-SUFFIX,hsbc.com
   - DOMAIN-SUFFIX,firstdata.com
+  - DOMAIN-SUFFIX,stripe.com
