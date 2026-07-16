@@ -1,5 +1,4 @@
 name: Sync clash ruleset
-name: Sync Clash/*.list to Providers .yaml
 
 on:
   push:
