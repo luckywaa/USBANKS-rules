@@ -16,6 +16,7 @@ payload:
   - DOMAIN-SUFFIX,intuit.com
   - DOMAIN-SUFFIX,annualcreditreport.com
   - DOMAIN-SUFFIX,experian.com
+  # chase
   - DOMAIN-SUFFIX,chase.com
   - DOMAIN-SUFFIX,chasecdn.com
   - DOMAIN-SUFFIX,nav.com
