@@ -2,7 +2,8 @@ name: Sync clash ruleset
 on:
   push:
     paths:
-      - 'Clash/**/*.list'
+      - 'Clash/*.list'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -10,40 +11,47 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - name: Process .list changes
+      - name: Process .list changes and generate .yaml
         run: |
-          # 取出本次变动的 .list 文件
-          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD -- 'Clash/*.list' 'Clash/**/*.list' || true)
+          CHANGED_FILES=$(git diff --name-only HEAD^ HEAD -- 'Clash/*.list' || true)
           echo "Changed files: $CHANGED_FILES"
 
           for f in $CHANGED_FILES; do
             BASENAME=$(basename "$f" .list)
             PROVIDERS_DIR="Clash/Providers"
             RULESET_DIR="$PROVIDERS_DIR/Ruleset"
+
             mkdir -p "$PROVIDERS_DIR" "$RULESET_DIR"
 
-            # 判断文件是否存在来决定是增/改还是删
+            # 判断文件是存在（新增/修改）还是删除
             if [ -f "$f" ]; then
-              echo "Processing added/modified: $f"
+              echo "Processing add/modify: $f"
               for target in "$PROVIDERS_DIR/${BASENAME}.yaml" "$RULESET_DIR/${BASENAME}.yaml"; do
                 echo "payload:" > "$target"
-                sed 's/^/  - /' "$f" >> "$target"
+                awk '
+                /^[[:space:]]*#/ { print; next }
+                /^[[:space:]]*$/ { next }
+                { print "  - " $0 }
+                ' "$f" >> "$target"
               done
             else
-              echo "Processing deleted: $f"
-              rm -f "$PROVIDERS_DIR/${BASENAME}.yaml" "$RULESET_DIR/${BASENAME}.yaml"
+              echo "Processing delete: $f"
+              rm -f "$PROVIDERS_DIR/${BASENAME}.yaml"
+              rm -f "$RULESET_DIR/${BASENAME}.yaml"
             fi
           done
 
-      - name: Commit and Push
+      - name: Commit and Push changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add Clash/Providers/ Clash/Providers/Ruleset/
-          git diff --staged --quiet || git commit -m "Auto sync .yaml from .list changes" && git push
+          # 若无实际变更则跳过提交，避免报错退出
+          git diff --cached --quiet || git commit -m "Auto sync .yaml from Clash/*.list changes" && git push
