@@ -48,6 +48,10 @@ payload:
   - DOMAIN-SUFFIX,loc.apple.com
   - DOMAIN,gs-loc-cn.apple.com
   - DOMAIN,gs-loc.apple.com
+  # schwab
+  - DOMAIN-SUFFIX,schwab.com
+  - DOMAIN-SUFFIX,launchdarkly.com
+  - DOMAIN-SUFFIX,trefis.com
   - DOMAIN-SUFFIX,sofi.com
   - DOMAIN-SUFFIX,sofi.glassboxdigital.io
   - DOMAIN-SUFFIX,ntp.org
