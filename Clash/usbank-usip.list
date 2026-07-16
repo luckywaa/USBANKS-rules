@@ -44,8 +44,10 @@ DOMAIN-SUFFIX,joinfizz.com
 DOMAIN-SUFFIX,ally.com
 DOMAIN-SUFFIX,rakuten.com
 DOMAIN-SUFFIX,ihg.com
+# 红包卡wifi-calling
 DOMAIN-SUFFIX,epdg.epc.att.net
 DOMAIN-SUFFIX,epdg.epc.att-idns.net
+# 苹果手机定位
 DOMAIN-SUFFIX,loc.apple.com
 DOMAIN,gs-loc-cn.apple.com
 DOMAIN,gs-loc.apple.com
