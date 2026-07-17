@@ -57,3 +57,5 @@ payload:
   - DOMAIN-SUFFIX,schwab.com
   - DOMAIN-SUFFIX,launchdarkly.com
   - DOMAIN-SUFFIX,trefis.com
+  #usbank
+  - DOMAIN-SUFFIX,usbank.com
