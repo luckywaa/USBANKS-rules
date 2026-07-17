@@ -53,7 +53,8 @@ DOMAIN,gs-loc.apple.com
 DOMAIN-SUFFIX,schwab.com
 DOMAIN-SUFFIX,launchdarkly.com
 DOMAIN-SUFFIX,trefis.com
-
+#usbank
+DOMAIN-SUFFIX,usbank.com
 
 DOMAIN-SUFFIX,sofi.com
 DOMAIN-SUFFIX,sofi.glassboxdigital.io
