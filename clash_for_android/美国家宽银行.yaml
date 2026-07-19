@@ -1,0 +1,880 @@
+# 基本配置
+mixed-port: 7890
+redir-port: 9797
+tproxy-port: 9898
+ipv6: false
+mode: Rule
+allow-lan: true
+unified-delay: true
+tcp-concurrent: true
+log-level: silent
+bind-address: "*"
+find-process-mode: always
+external-controller: 0.0.0.0:9090
+external-ui-url: "https://github.com/Unwilledflow/zashboard-ios-style-adn-m3e/raw/refs/heads/main/dist.zip"
+external-ui: "dashboard"
+secret: ""
+
+# 局域网与热点共享免密及路由优化
+skip-auth-prefixes:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  - 127.0.0.1/8
+  - 100.64.0.0/10
+
+# 订阅健康检查
+p: &p
+  type: http
+  interval: 86400
+  health-check:
+    enable: true
+    url: 'https://cp.cloudflare.com/generate_204'
+    interval: 1800
+    timeout: 5000
+  proxy: 订阅更新
+  exclude-filter: '(?i)官网|邀请|到期|流量|更新|验证|剩余|频道|长期|推广|分享|周期|我的'
+  header:
+      User-Agent:
+      - "ClashMetaForAndroid/v2.11.26"
+
+# 自动测速组
+s: &s
+  type: url-test
+  interval: 7200
+  lazy: true
+  timeout: 5000
+  url: 'https://cp.cloudflare.com/generate_204'
+
+# 地区负载均衡专用优化锚点
+lbr: &lbr
+  type: load-balance
+  strategy: consistent-hashing
+  interval: 1800
+  lazy: true
+  timeout: 5000
+  url: 'https://cp.cloudflare.com/generate_204'
+
+# 订阅地址相关
+proxy-providers:
+  proxy1:
+    type: http
+    url: ""
+    path: proxy_provider/proxy1.yaml
+    interval: 86400
+    health-check:
+      enable: true
+      url: https://cp.cloudflare.com
+      interval: 300
+      timeout: 1000
+      tolerance: 100
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# 时间校准
+ntp:
+  enable: true
+  write-to-system: true
+  server: ntp.ntsc.ac.cn
+  port: 123
+  interval: 60
+
+# host模块
+hosts:
+  mtalk.google.com: 142.250.107.188
+  alt1-mtalk.google.com: 74.125.200.188
+  alt2-mtalk.google.com: 192.178.220.188
+  alt3-mtalk.google.com: 74.125.131.188
+  alt4-mtalk.google.com: 209.85.144.188
+  alt5-mtalk.google.com: 74.125.126.188
+  alt6-mtalk.google.com: 142.250.115.188
+  alt7-mtalk.google.com: 192.178.131.188
+  alt8-mtalk.google.com: 172.253.132.188
+  
+# 嗅探模块
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: false
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 5228, 8443]
+    QUIC:
+      ports: [443, 8443]
+  force-domain:
+    - "+.v2ex.com"
+  skip-domain: # 如遇需内部通信的应用请放行该域名
+    - "Mijia Cloud"
+
+# 网卡模块 (深度调优热点转发与网络拓扑)
+tun:
+  exclude-uid: []
+  include-uid: []
+  enable: true  # true 开 # false 默认关
+  device: Meta
+  stack: gvisor
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+  udp-timeout: 300
+  auto-route: true
+  strict-route: false
+  auto-redirect: false
+  auto-redirect-interface: true
+  endpoint-independent-nat: true # 开启 Full Cone NAT，全面优化多设备共享环境下的游戏联机
+
+# DNS模块
+dns:
+  enable: true
+  use-hosts: true
+  ipv6: false
+  cache-algorithm: arc
+  prefer-h3: true
+  listen: 0.0.0.0:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-range6: fdfe:dcba:9876::1/64
+  fake-ip-filter-mode: rule
+  fake-ip-filter:
+    - DOMAIN-SUFFIX,googleapis.cn,fake-ip
+    - DOMAIN-SUFFIX,rom.miui.com,real-ip
+    - DOMAIN-SUFFIX,miui.com,real-ip
+    - RULE-SET,CN_域,real-ip
+    - RULE-SET,Fake-IP-Filter,real-ip
+    - DOMAIN-KEYWORD,mtalk.google,real-ip
+  default-nameserver:
+    - 223.5.5.5
+    - 1.12.12.12
+  direct-nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  proxy-server-nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  nameserver-policy:
+    "RULE-SET:No-ads-all_域":
+      - rcode://success
+    "RULE-SET:CN_域":
+      - https://dns.alidns.com/dns-query
+      - https://doh.pub/dns-query
+  nameserver:
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+
+# 特殊代理节点定义
+proxies:
+  - {name: 🇨🇳 本地直连, type: direct, udp: true}
+  - {name: ⛔ 拒绝连接, type: reject}
+
+# 应用分流配置模版
+CN_groups: &CN_groups
+    type: select
+    proxies:
+      - 🇨🇳 本地直连
+      - 总模式
+      - 延迟最低
+      - 故障转移
+      - 负载均衡
+      - 手动选择
+      - 美国节点
+      - 香港节点
+      - 狮城节点
+      - 日本节点
+      - 台湾节点
+      - ⛔ 拒绝连接
+app_groups: &app_groups
+    type: select
+    proxies:
+      - 总模式
+      - 延迟最低
+      - 故障转移
+      - 负载均衡
+      - 手动选择
+      - 美国节点
+      - 香港节点
+      - 狮城节点
+      - 日本节点
+      - 台湾节点
+      - 🇨🇳 本地直连
+      - ⛔ 拒绝连接
+
+# 代理策略组配置
+proxy-groups:
+  - name: 总模式
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Main.png"
+    type: select
+    proxies:
+      - 延迟最低
+      - 故障转移
+      - 负载均衡
+      - 手动选择
+      - 美国节点
+      - 香港节点
+      - 狮城节点
+      - 日本节点
+      - 台湾节点
+
+  - name: 订阅更新
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Update.png"
+    type: select
+    proxies:
+      - 🇨🇳 本地直连
+      - 总模式
+
+  # 应用分流策略组
+
+  - name: 哔哩哔哩
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/BiliBili.png"
+    <<: *CN_groups
+
+  - name: Steam
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Game.png"
+    <<: *app_groups
+
+  - name: Apple
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Apple.png"
+    <<: *CN_groups
+
+  - name: Microsoft
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Microsoft.png"
+    <<: *app_groups
+
+  - name: E-hentai
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/E-hentai.png"
+    <<: *app_groups
+
+  - name: Pixiv
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Pixiv.png"
+    <<: *app_groups
+
+  - name: Telegram
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png"
+    <<: *app_groups
+
+  - name: Emby
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Emby.png"
+    <<: *app_groups
+
+  - name: Discord
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Discord.png"
+    <<: *app_groups
+
+  - name: Spotify
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Spotify.png"
+    <<: *app_groups
+
+  - name: TikTok
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/TikTok_1.png"
+    <<: *app_groups
+
+  - name: YouTube
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/YouTube.png"
+    <<: *app_groups
+
+  - name: Instagram
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Instagram.png"
+    <<: *app_groups
+
+  - name: Netflix
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Netflix.png"
+    <<: *app_groups
+
+  - name: Google
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png"
+    <<: *app_groups
+
+  - name: GoogleFCM
+    icon: "https://v6.gh-proxy.org/https://raw.githubusercontent.com/xiao4350/mihomo/refs/heads/main/icon3/GoogleFCM.png"
+    <<: *CN_groups
+
+  - name: Facebook
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Facebook.png"
+    <<: *app_groups
+
+  - name: AI
+    icon: "https://ghfast.top/https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png"
+    <<: *app_groups
+
+  - name: GitHub
+    icon: "https://v6.gh-proxy.org/https://raw.githubusercontent.com/xiao4350/mihomo/refs/heads/main/icon3/GitHub.png"
+    <<: *app_groups
+
+  - name: Twitter(X)
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Twitter.png"
+    <<: *app_groups
+
+  - name: Crypto
+    icon: "https://raw.githubusercontent.com/chaoscard/proxyrules/master/Bitcoin.png"
+    <<: *app_groups
+
+  - name: PayPal
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/PayPal.png"
+    <<: *app_groups
+
+  - name: Tracker
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Download.png"
+    type: select
+    proxies:
+      - 🇨🇳 本地直连
+      - 总模式
+      - 手动选择
+      - ⛔ 拒绝连接
+
+  - name: 国内直连名单
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/China.png"
+    type: select
+    proxies:
+      - 🇨🇳 本地直连
+      - 总模式
+
+  - name: 海外代理名单
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Global.png"
+    <<: *app_groups
+
+  - name: 广告拦截
+    icon: "https://raw.githubusercontent.com/xiao4350/mihomo/main/icon3/AdBlock.png"
+    type: select
+    proxies:
+      - PASS
+      - ⛔ 拒绝连接
+      - REJECT-DROP
+
+  - name: WebRTC
+    icon: "https://v6.gh-proxy.org/https://raw.githubusercontent.com/xiao4350/mihomo/refs/heads/main/icon3/WebRTC.png"
+    type: select
+    proxies:
+      - PASS
+      - ⛔ 拒绝连接
+      - REJECT-DROP
+
+  - name: 漏网之鱼
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Final.png"
+    <<: *app_groups
+
+  - name: 美国银行
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png"
+    type: select
+    proxies:
+      - 美国家宽节点
+      - 美国节点
+
+  # -------- 自动策略组 --------
+
+  - name: 延迟最低
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/YCZD.png"
+    include-all-providers: true
+    <<: *s
+
+  - name: 故障转移
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/GZZY.png"
+    type: fallback
+    include-all-providers: true
+    <<: *s
+
+  - name: 负载均衡
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/FZJH.png"
+    type: load-balance
+    strategy: round-robin
+    include-all-providers: true
+    <<: *s
+    
+  - name: 中转服务
+    icon: "https://testingcf.jsdelivr.net/gh/milangree/rules@main/icons/Adjust.png"
+    type: load-balance
+    strategy: round-robin
+    tolerance: 60
+    filter: "^(?=.*((?i)🇭🇰|港|hk|hongkong|hong kong|🇹🇼|台|tw|taiwan|tai wan|🇯🇵|日|jp|japan|🇸🇬|新|sg|singapore))(?!.*(免流|高速|0.001|0.1倍|电信|移动|避免)).*$"
+    url: 'https://cp.cloudflare.com/generate_204'
+    interval: 300
+    timeout: 3000
+    use: 
+      - proxy1
+    weights:
+      "^(?=.*((?i)港|hk|hong|🇭🇰)).*$": 1.1
+      "^(?=.*((?i)日|jp|japan|🇯🇵)).*$": 1.2
+      ".*": 1
+
+  # -------- 地区节点分组 --------
+  - name: 狮城节点
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Singapore.png"
+    filter: "^(?=.*(新加坡|坡|狮城|SG|Singapore)).*$"
+    include-all-providers: true
+    <<: *lbr
+
+  - name: 美国节点
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png"
+    filter: "^(?=.*(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|America|US|United States))(?!.*((?i)家宽|住宅|宽带|residential|isp)).*$"
+    include-all-providers: true
+    <<: *lbr
+
+  - name: 美国家宽节点
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/United_States.png"
+    filter: "^(?=.*(美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|America|US|United States))(?=.*((?i)家宽|住宅|宽带|residential|isp)).*$"
+    include-all-providers: true
+    <<: *lbr
+
+  - name: 香港节点
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hong_Kong.png"
+    filter: "^(?=.*(港|HK|hk|Hong Kong|HongKong|hongkong)).*$"
+    include-all-providers: true
+    <<: *lbr
+
+  - name: 日本节点
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Japan.png"
+    filter: "^(?=.*(日本|川日|东京|大阪|泉日|埼玉|沪日|深日|JP|Japan)).*$"
+    include-all-providers: true
+    <<: *lbr
+
+  - name: 台湾节点
+    icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Taiwan.png"
+    filter: "^(?=.*(台|新北|彰化|TW|Taiwan)).*$"
+    include-all-providers: true
+    <<: *lbr
+
+  - name: 手动选择
+    icon: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/icon2/Select.png"
+    type: select
+    include-all-providers: true
+
+# ============ 规则集锚点定义 ============
+rule-anchor:
+  Local: &Local
+    {type: file, behavior: classical, format: text}
+  IPCIDR: &IPCIDR
+    {type: http, behavior: ipcidr, format: mrs, interval: 86400}
+  Domain: &Domain
+    {type: http, behavior: domain, format: mrs, interval: 86400}
+
+# ============ 规则集配置 ============
+rule-providers:
+  直连名单:
+    <<: *Local
+    path: ./rules/直连名单.list
+
+  代理名单:
+    <<: *Local
+    path: ./rules/代理名单.list
+
+  WebRTC_端/域:
+    <<: *Domain
+    path: ./rules/WebRTC.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/WebRTC.mrs"
+
+  Fake-IP-Filter:
+    <<: *Domain
+    path: ./rules/Fake-IP-Filter.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/fakeip-filter.mrs"
+
+  CN_IP:
+    <<: *IPCIDR
+    path: ./rules/CN_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/cnip.mrs"
+  CN_域:
+    <<: *Domain
+    path: ./rules/CN_域.mrs
+    url: "https://v6.gh-proxy.org/https://raw.githubusercontent.com/DustinWin/ruleset_geodata/refs/heads/mihomo-ruleset/cn.mrs"
+
+  No-ads-all_域:
+    <<: *Domain
+    path: ./rules/No-ads-all.mrs
+    url: "https://v6.gh-proxy.org/https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.mrs"
+
+  XiaoHongShu_域:
+    <<: *Domain
+    path: ./rules/XiaoHongShu.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/peiyingyao/Rule-for-OCD/raw/refs/heads/master/rule/Clash/XiaoHongShu/XiaoHongShu_OCD_Domain.mrs"
+
+  DouYin_域:
+    <<: *Domain
+    path: ./rules/DouYin.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/peiyingyao/Rule-for-OCD/raw/refs/heads/master/rule/Clash/DouYin/DouYin_OCD_Domain.mrs"
+
+  BiliBili_域:
+    <<: *Domain
+    path: ./rules/BiliBili.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/bilibili.mrs"
+  BiliBili_IP:
+    <<: *IPCIDR
+    path: ./rules/BiliBili_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geoip/bilibili.mrs"
+
+  Steam_域:
+    <<: *Domain
+    path: ./rules/Steam.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/peiyingyao/Rule-for-OCD/raw/refs/heads/master/rule/Clash/Steam/Steam_OCD_Domain.mrs"
+
+  TikTok_域:
+    <<: *Domain
+    path: ./rules/TikTok.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/tiktok.mrs"
+
+  Spotify_域:
+    <<: *Domain
+    path: ./rules/Spotify.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/spotify.mrs"
+  Spotify_IP:
+    <<: *IPCIDR
+    path: ./rules/Spotify_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/peiyingyao/Rule-for-OCD/raw/refs/heads/master/rule/Clash/Spotify/Spotify_OCD_IP.mrs"
+
+  Facebook_域:
+    <<: *Domain
+    path: ./rules/Facebook.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/peiyingyao/Rule-for-OCD/raw/refs/heads/master/rule/Clash/Facebook/Facebook_OCD_Domain.mrs"
+  Facebook_IP:
+    <<: *IPCIDR
+    path: ./rules/Facebook_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geoip/facebook.mrs"
+
+  E-hentai_域:
+    <<: *Domain
+    path: ./rules/E-hentai.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/ehentai.mrs"
+
+  Pixiv_域:
+    <<: *Domain
+    path: ./rules/Pixiv.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/pixiv.mrs"
+
+  Telegram_域:
+    <<: *Domain
+    path: ./rules/Telegram.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/telegram.mrs"
+  Telegram_IP:
+    <<: *IPCIDR
+    path: ./rules/Telegram_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geoip/telegram.mrs"
+
+  YouTube_域:
+    <<: *Domain
+    path: ./rules/YouTube.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/youtube.mrs"
+  YouTube_IP:
+    <<: *IPCIDR
+    path: ./rules/YouTube_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/peiyingyao/Rule-for-OCD/raw/refs/heads/master/rule/Clash/YouTube/YouTube_OCD_IP.mrs"
+
+  Google_域:
+    <<: *Domain
+    path: ./rules/Google.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/google.mrs"
+  Google_IP:
+    <<: *IPCIDR
+    path: ./rules/Google_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geoip/google.mrs"
+
+  Microsoft_域:
+    <<: *Domain
+    path: ./rules/Microsoft.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/microsoft.mrs"
+
+  Apple_域:
+    <<: *Domain
+    path: ./rules/Apple.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/apple.mrs"
+  Apple_IP:
+    <<: *IPCIDR
+    path: ./rules/Apple_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geoip/apple.mrs"
+
+  AI_域:
+    <<: *Domain
+    path: ./rules/AI.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/ai.mrs"
+  AI_IP:
+    <<: *IPCIDR
+    path: ./rules/AI_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geoip/ai.mrs"
+
+  Instagram_域:
+    <<: *Domain
+    path: ./rules/Instagram.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/Instagram.mrs"
+
+  Netflix_域:
+    <<: *Domain
+    path: ./rules/Netflix.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/netflix.mrs"
+  Netflix_IP:
+    <<: *IPCIDR
+    path: ./rules/Netflix_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/netflixip.mrs"
+
+  Emby_域:
+    <<: *Domain
+    path: ./rules/Emby.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/musiyun124/mihomo/raw/refs/heads/main/rules/Emby.mrs"
+
+  Discord_域:
+    <<: *Domain
+    path: ./rules/Discord.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/peiyingyao/Rule-for-OCD/raw/refs/heads/master/rule/Clash/Discord/Discord_OCD_Domain.mrs"
+
+  GitHub_域:
+    <<: *Domain
+    path: ./rules/GitHub.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/github.mrs"
+
+  Twitter_域:
+    <<: *Domain
+    path: ./rules/Twitter.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geosite/twitter.mrs"
+  Twitter_IP:
+    <<: *IPCIDR
+    path: ./rules/Twitter_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo-lite/geoip/twitter.mrs"
+
+  Private_域:
+    <<: *Domain
+    path: ./rules/LAN.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/private.mrs"
+  Private_IP:
+    <<: *IPCIDR
+    path: ./rules/Private_IP.mrs
+    url: "https://v6.gh-proxy.org/https://github.com/DustinWin/ruleset_geodata/raw/refs/heads/mihomo-ruleset/privateip.mrs"
+
+  PublicTracker:
+    <<: *Domain
+    path: ./rules/category-public-tracker.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-public-tracker.mrs"
+  HTTPDNS-CN:
+    <<: *Domain
+    path: ./rules/category-httpdns-cn.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-httpdns-cn.mrs"
+  Trackers:
+    <<: *Domain
+    path: ./rules/trackers_domain.mrs
+    url: "https://github.com/yhlh9982/clash-rules/releases/download/tracker-rules/trackers_domain.mrs"
+  Category-DoH:
+    <<: *Domain
+    path: ./rules/category-doh.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-doh.mrs"
+  Xunlei:
+    <<: *Domain
+    path: ./rules/xunlei.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/xunlei.mrs"
+  Crypto:
+    <<: *Domain
+    path: ./rules/category-cryptocurrency.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-cryptocurrency.mrs"
+  PayPal:
+    <<: *Domain
+    path: ./rules/paypal.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/paypal.mrs"
+  Bing:
+    <<: *Domain
+    path: ./rules/bing.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/bing.mrs"
+  MSN:
+    <<: *Domain
+    path: ./rules/msn.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/msn.mrs"
+  GameDownload:
+    <<: *Domain
+    path: ./rules/category-game-platforms-download.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-game-platforms-download.mrs"
+  GamesGlobal:
+    <<: *Domain
+    path: ./rules/category-games-!cn.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-games-!cn.mrs"
+  GamesCN:
+    <<: *Domain
+    path: ./rules/category-games-cn.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/category-games-cn.mrs"
+  PlayStation:
+    <<: *Domain
+    path: ./rules/playstation.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/playstation.mrs"
+  Epic:
+    <<: *Domain
+    path: ./rules/epicgames.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/epicgames.mrs"
+  Origin:
+    <<: *Domain
+    path: ./rules/origin.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/origin.mrs"
+  Blizzard:
+    <<: *Domain
+    path: ./rules/blizzard.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/blizzard.mrs"
+  Nintendo:
+    <<: *Domain
+    path: ./rules/nintendo.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/nintendo.mrs"
+  Ubisoft:
+    <<: *Domain
+    path: ./rules/ubisoft.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/ubisoft.mrs"
+  GOG:
+    <<: *Domain
+    path: ./rules/gog.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/gog.mrs"
+  Xbox:
+    <<: *Domain
+    path: ./rules/xbox.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/xbox.mrs"
+  EA:
+    <<: *Domain
+    path: ./rules/ea.mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/refs/heads/meta/geo/geosite/ea.mrs"
+
+  美国银行_域:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rules/usbank-hashomenet.list
+    url: "https://raw.githubusercontent.com/luckywaa/USBANKS-rules/refs/heads/main/Clash/usbank-hashomenet.list"
+
+  香港银行_中国IP:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rules/hkbank-chineseip.list
+    url: "https://raw.githubusercontent.com/luckywaa/USBANKS-rules/refs/heads/main/Clash/hkbank-chineseip.list"
+
+# ============ 路由规则 ============
+# 规则优先级：从上到下依次匹配，命中即停止
+rules:
+  # -------- 自定义规则优先 --------
+  - RULE-SET,直连名单,国内直连名单
+  - RULE-SET,代理名单,海外代理名单
+  - PROCESS-NAME,sub_store_node,订阅更新
+
+  # -------- 功能性拦截规则 --------
+  - RULE-SET,WebRTC_端/域,WebRTC
+  - RULE-SET,No-ads-all_域,广告拦截
+  - RULE-SET,Category-DoH,广告拦截
+  - RULE-SET,HTTPDNS-CN,广告拦截
+  - DOMAIN-KEYWORD,v6.gh-proxy,🇨🇳 本地直连
+  - DOMAIN,time.is,🇨🇳 本地直连
+  - DOMAIN-SUFFIX,pool.ntp.org,🇨🇳 本地直连
+  - RULE-SET,香港银行_中国IP,🇨🇳 本地直连
+
+  # -------- 独立/特定分流规则 --------
+  # --- PikPak--
+  - DOMAIN,access.pikpakdrive.com,⛔ 拒绝连接
+  - DOMAIN,access.mypikpak.com,⛔ 拒绝连接
+  - DOMAIN,access.mypikpak.net,⛔ 拒绝连接
+  - DOMAIN,access.pikpak.me,⛔ 拒绝连接
+  - DOMAIN-KEYWORD,dl-a10b-,🇨🇳 本地直连
+  - DOMAIN-KEYWORD,dl-z01a-,🇨🇳 本地直连
+  - DOMAIN-REGEX,^dl-[A-Za-z0-9-]+\.mypikpak\.com$,🇨🇳 本地直连
+ 
+  # --- BT/PT 下载分流---
+  - DOMAIN-KEYWORD,ipv6tracker,Tracker
+  - DOMAIN-KEYWORD,bittorrent,Tracker
+  - DOMAIN-KEYWORD,torrent,Tracker
+  - DOMAIN-KEYWORD,tracker,Tracker
+  - RULE-SET,PublicTracker,Tracker
+  - RULE-SET,Trackers,Tracker
+  - RULE-SET,Xunlei,Tracker
+
+  # --- 极致优化：游戏下载 CDN 及国区平台强制直连 ---
+  - DOMAIN-KEYWORD,steamcontent,🇨🇳 本地直连
+  - DOMAIN-KEYWORD,origin-a,🇨🇳 本地直连
+  - RULE-SET,GameDownload,🇨🇳 本地直连
+  - RULE-SET,Blizzard,🇨🇳 本地直连
+  - RULE-SET,Ubisoft,🇨🇳 本地直连
+  - RULE-SET,GamesCN,🇨🇳 本地直连
+  # --- 国际游戏平台客户端登录及社区策略--
+  - RULE-SET,PlayStation,Steam
+  - RULE-SET,Nintendo,Steam
+  - RULE-SET,Origin,Steam
+  - RULE-SET,Xbox,Steam
+  - RULE-SET,Epic,Steam
+  - RULE-SET,GOG,Steam
+  - RULE-SET,EA,Steam
+  - RULE-SET,GamesGlobal,Steam
+
+  # --- Copilot & 必应---
+  - DOMAIN-SUFFIX,copilot.microsoft.com,AI
+  - DOMAIN-SUFFIX,api.microsoftapp.net,AI
+  - DOMAIN-SUFFIX,copilot.azure.com,AI
+  - DOMAIN-SUFFIX,openai.azure.com,AI  
+  - DOMAIN,edgeservices.bing.com,AI
+  - DOMAIN,sydney.bing.com,AI
+  - DOMAIN,img.bing.com,AI
+  - RULE-SET,Bing,Microsoft
+  - RULE-SET,MSN,Microsoft
+
+  # --- 金融与虚拟货币 ---
+  - RULE-SET,Crypto,Crypto
+  - RULE-SET,PayPal,PayPal
+  - RULE-SET,美国银行_域,美国银行
+
+  # -------- 本地网络规则 --------
+  - RULE-SET,Private_域,🇨🇳 本地直连
+  - RULE-SET,Private_IP,🇨🇳 本地直连,no-resolve
+
+  # -------- 主配置原生应用分流规则 --------
+  - PROCESS-NAME,com.ss.android.ugc.aweme,🇨🇳 本地直连
+  - RULE-SET,DouYin_域,🇨🇳 本地直连
+
+  - PROCESS-NAME,com.xingin.xhs,🇨🇳 本地直连
+  - RULE-SET,XiaoHongShu_域,🇨🇳 本地直连
+
+  - PROCESS-NAME,tv.danmaku.bili,哔哩哔哩
+  - RULE-SET,BiliBili_域,哔哩哔哩
+  - RULE-SET,BiliBili_IP,哔哩哔哩,no-resolve
+
+  - AND,((NETWORK,UDP),(DST-PORT,443)),⛔ 拒绝连接
+  - RULE-SET,Steam_域,Steam
+  - RULE-SET,GitHub_域,GitHub
+  - RULE-SET,Emby_域,Emby
+  - RULE-SET,E-hentai_域,E-hentai
+  - RULE-SET,Pixiv_域,Pixiv
+  - RULE-SET,Discord_域,Discord
+  - RULE-SET,TikTok_域,TikTok
+
+  - RULE-SET,Twitter_域,Twitter(X)
+  - RULE-SET,Twitter_IP,Twitter(X),no-resolve
+
+  - RULE-SET,AI_域,AI
+  - RULE-SET,AI_IP,AI,no-resolve
+  - PROCESS-NAME,com.openai.chatgpt,AI
+
+  - DOMAIN-KEYWORD,mtalk.google,GoogleFCM
+
+  - RULE-SET,YouTube_域,YouTube
+  - RULE-SET,YouTube_IP,YouTube,no-resolve
+
+  - RULE-SET,Google_域,Google
+  - RULE-SET,Google_IP,Google,no-resolve
+
+  - RULE-SET,Instagram_域,Instagram
+
+  - RULE-SET,Netflix_域,Netflix
+  - RULE-SET,Netflix_IP,Netflix,no-resolve
+
+  - RULE-SET,Spotify_域,Spotify
+  - RULE-SET,Spotify_IP,Spotify,no-resolve
+
+  - RULE-SET,Apple_域,Apple
+  - RULE-SET,Apple_IP,Apple,no-resolve
+
+  - RULE-SET,Microsoft_域,Microsoft
+
+  - RULE-SET,Telegram_域,Telegram
+  - RULE-SET,Telegram_IP,Telegram,no-resolve
+
+  - RULE-SET,Facebook_域,Facebook
+  - RULE-SET,Facebook_IP,Facebook,no-resolve
+
+  - DOMAIN,browserleaks.com,漏网之鱼
+  
+  # -------- 中国大陆全局兜底 --------
+  - RULE-SET,CN_域,🇨🇳 本地直连
+  - RULE-SET,CN_IP,🇨🇳 本地直连,no-resolve
+
+  # 末端兜底规则
+  - MATCH,漏网之鱼
+
+
+
