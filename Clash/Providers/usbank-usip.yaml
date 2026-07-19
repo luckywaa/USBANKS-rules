@@ -60,4 +60,4 @@ payload:
   #usbank
   - DOMAIN-SUFFIX,usbank.com
   #gv稳定性
-  - DOMAIN-SUFFIX,voice.google.com
+  - DOMAIN-SUFFIX,google.com
