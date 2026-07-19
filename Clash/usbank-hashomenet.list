@@ -67,6 +67,8 @@ DOMAIN-SUFFIX,americanexpress.com
 DOMAIN-SUFFIX,aexp-static.com
 DOMAIN-SUFFIX,amextravel.com
 DOMAIN-SUFFIX,sentry.io
+#gv稳定性
+DOMAIN-SUFFIX,voice.google.com
 
 DOMAIN-SUFFIX,hsbc.com
 DOMAIN-SUFFIX,firstdata.com
