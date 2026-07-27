@@ -73,3 +73,7 @@ DOMAIN-SUFFIX,google.com
 DOMAIN-SUFFIX,hsbc.com
 DOMAIN-SUFFIX,firstdata.com
 DOMAIN-SUFFIX,stripe.com
+
+#redpocket
+DOMAIN-SUFFIX,redpocket.com
+DOMAIN-SUFFIX,refersion.com
