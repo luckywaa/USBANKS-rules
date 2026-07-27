@@ -64,3 +64,5 @@ payload:
   #redpocket
   - DOMAIN-SUFFIX,redpocket.com
   - DOMAIN-SUFFIX,refersion.com
+  #twitter
+  - DOMAIN-SUFFIX,twitter.com
