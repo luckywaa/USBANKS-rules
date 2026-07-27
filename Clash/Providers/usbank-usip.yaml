@@ -61,3 +61,6 @@ payload:
   - DOMAIN-SUFFIX,usbank.com
   #gv稳定性
   - DOMAIN-SUFFIX,google.com
+  #redpocket
+  - DOMAIN-SUFFIX,redpocket.com
+  - DOMAIN-SUFFIX,refersion.com
