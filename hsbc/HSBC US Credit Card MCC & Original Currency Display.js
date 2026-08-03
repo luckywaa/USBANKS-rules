@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         HSBC US Credit Card MCC & Original Currency Display
 // @namespace    http://tampermonkey.net/
-// @version      5.0
+// @version      6.0
 // @match        *://onlinebanking.firstdata.com/*
+// @match        *://www.us.hsbc.com/online/dashboard*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
-// 显示MCC和消费原始价格，用tampermonkey安装效果更佳
+
 (function() {
     'use strict';
 
@@ -151,11 +152,14 @@
     const normalize = (str) => (str || "").replace(/[^A-Z0-9]/gi, '').toUpperCase();
     const mccCache = new Map();
     const fxCache = new Map(); // 新增：缓存原始币种信息
+    const dashboardMccCache = new Map(); // Dashboard 页面 MCC 缓存
     const _processed = new WeakSet();
+    const _dashboardProcessed = new WeakSet();
 
     // [DEBUG] 暴露到 window 便于控制台检查（调试完可删除）
     window.__mccCache = mccCache;
     window.__fxCache = fxCache;
+    window.__dashboardMccCache = dashboardMccCache;
 
     const _xhrMap = new WeakMap();
     XMLHttpRequest.prototype.open = new Proxy(XMLHttpRequest.prototype.open, {
@@ -268,6 +272,42 @@
                         draw();
                     } catch (e) {}
                 }
+
+                // ========== Dashboard 页面：mmf-account-transactions API ==========
+                // pending 交易直接含 merchantCategoryCode，无需 997 补充行
+                if (url && url.includes('/mmf-account-transactions--us-hbus-prod-proxy/v2/transactions')) {
+                    try {
+                        dashboardMccCache.clear();
+
+                        const json = JSON.parse(thisArg.responseText);
+                        const transactions = json.transactions || [];
+
+                        transactions.forEach(t => {
+                            // 只处理有 MCC 的交易
+                            if (!t.merchantCategoryCode) return;
+
+                            // 日期转换：ISO "2026-08-03" -> "08/03/2026"
+                            const date = t.transactionDate.split('-');
+                            const mmddyyyy = `${date[1]}/${date[2]}/${date[0]}`;
+
+                            // 金额（transactionAmount 是对象）
+                            const amt = Math.abs(
+                                (t.transactionAmount && t.transactionAmount.amount) || 0
+                            ).toFixed(2);
+
+                            // 描述：优先用 merchantName，回退到 transactionDescriptions 拼接
+                            let desc = t.merchantName || '';
+                            if (!desc && t.transactionDescriptions) {
+                                desc = t.transactionDescriptions.join(' ');
+                            }
+
+                            const key = `${mmddyyyy}_${amt}_${normalize(desc)}`;
+                            dashboardMccCache.set(key, t.merchantCategoryCode);
+                        });
+
+                        drawDashboard();
+                    } catch (e) {}
+                }
             });
             return Reflect.apply(target, thisArg, args);
         }
@@ -376,9 +416,86 @@
         });
     }
 
+    // 4. Dashboard 页面 UI 注入
+    // Dashboard 交易行结构：<tr class="description-table-row">
+    //   日期: <date-display><div>08/03/2026</div></date-display>
+    //   描述: <div id="transaction-description-preview-N"><p><span>DiDi</span></p>...
+    //   金额: <td class="table-row-column3"><p class="m-0"> 1.51</p>
+    function drawDashboard() {
+        const rows = document.querySelectorAll('tr.description-table-row');
+        rows.forEach(row => {
+            if (_dashboardProcessed.has(row)) return;
+
+            // 日期
+            const dateEl = row.querySelector('date-display div');
+            if (!dateEl) return;
+            const date = dateEl.textContent.trim();
+
+            // 描述：取第一行 <span> 内容（与 API 的 merchantName 对应）
+            const descSpan = row.querySelector('.table-row-column2 p span');
+            if (!descSpan) return;
+            const desc = normalize(descSpan.textContent);
+
+            // 金额：column3 下的 <p>，取文本数字
+            const amtP = row.querySelector('.table-row-column3 p');
+            if (!amtP) return;
+            const amt = Math.abs(parseFloat(amtP.textContent.replace(/[^\d.-]/g, ''))).toFixed(2);
+            // 无金额（如纯 Payment 信用行）则跳过
+            if (amt === '0.00') {
+                // 也检查 column4（credit 列）
+                const creditP = row.querySelector('.table-row-column4 p');
+                if (!creditP) return;
+                const creditAmt = Math.abs(parseFloat(creditP.textContent.replace(/[^\d.-]/g, ''))).toFixed(2);
+                if (creditAmt === '0.00') return;
+                // Payment 交易没有 MCC，跳过
+                return;
+            }
+
+            const key = `${date}_${amt}_${desc}`;
+            const mcc = dashboardMccCache.get(key);
+            if (!mcc) return;
+
+            _dashboardProcessed.add(row);
+
+            // 注入到描述列：把 MCC 放在描述文本之后
+            const descCol = row.querySelector('.table-row-column2');
+            if (!descCol || descCol.querySelector('.hsbc-mcc-tag')) return;
+
+            const mccLink = document.createElement('span');
+            mccLink.innerText = mcc;
+            mccLink.className = 'hsbc-mcc-tag';
+            // Dashboard 描述列是纵向布局，MCC 标签换行显示
+            mccLink.style.display = 'block';
+            mccLink.style.marginTop = '4px';
+
+            // 悬停逻辑
+            mccLink.onmouseenter = (e) => {
+                const name = MCC_DB[mcc] || "Manual recognition required.";
+                tooltip.innerHTML = `<div style="font-weight:bold;margin-bottom:4px;color:#ff4d4d">MCC: ${mcc}</div><div>${name}</div>`;
+                tooltip.style.display = 'block';
+            };
+            mccLink.onmousemove = (e) => {
+                tooltip.style.left = (e.pageX + 15) + 'px';
+                tooltip.style.top = (e.pageY + 10) + 'px';
+            };
+            mccLink.onmouseleave = () => {
+                tooltip.style.display = 'none';
+            };
+
+            descCol.appendChild(mccLink);
+        });
+    }
+
     const run = () => {
-        new MutationObserver(() => { if (mccCache.size > 0 || fxCache.size > 0) draw(); })
-            .observe(document.documentElement, { childList: true, subtree: true });
+        // Statement 页面监听
+        new MutationObserver(() => {
+            if (mccCache.size > 0 || fxCache.size > 0) draw();
+        }).observe(document.documentElement, { childList: true, subtree: true });
+
+        // Dashboard 页面监听
+        new MutationObserver(() => {
+            if (dashboardMccCache.size > 0) drawDashboard();
+        }).observe(document.documentElement, { childList: true, subtree: true });
     };
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
