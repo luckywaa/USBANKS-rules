@@ -6,17 +6,7 @@ payload:
   # DOMAIN: 0
   # DOMAIN-SUFFIX: 7
   # TOTAL: 7
-  - DOMAIN-SUFFIX,sofi.com
-  - DOMAIN-SUFFIX,sofi.glassboxdigital.io
-  - DOMAIN-SUFFIX,ntp.org
-  - DOMAIN-SUFFIX,transmitsecurity.io
-  - DOMAIN-SUFFIX,soficdn.net
-  - DOMAIN-SUFFIX,online-metrix.net
-  # American Express
-  - DOMAIN-SUFFIX,americanexpress.com
-  - DOMAIN-SUFFIX,aexp-static.com
-  - DOMAIN-SUFFIX,amextravel.com
-  - DOMAIN-SUFFIX,sentry.io
+  # 无论有没有家宽，都必须用国内ip
   - DOMAIN-SUFFIX,hsbc.com
   - DOMAIN-SUFFIX,firstdata.com
   - DOMAIN-SUFFIX,stripe.com
