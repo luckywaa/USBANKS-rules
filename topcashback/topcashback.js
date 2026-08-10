@@ -3,6 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @match        *://www.topcashback.cn/account/earnings*
+// @match        *://www.topcashback.com/account/earnings*
 // @run-at       document-idle
 // @grant        none
 // ==/UserScript==
