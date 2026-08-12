@@ -13,3 +13,5 @@ DOMAIN-SUFFIX,hsbc.com
 DOMAIN-SUFFIX,firstdata.com
 DOMAIN-SUFFIX,stripe.com
 
+# huggingface
+DOMAIN-SUFFIX,hf-mirror.com
