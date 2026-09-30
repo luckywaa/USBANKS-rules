@@ -15,3 +15,6 @@ DOMAIN-SUFFIX,stripe.com
 
 # huggingface
 DOMAIN-SUFFIX,hf-mirror.com
+
+# 咪仔队
+DOMAIN-SUFFIX,duotai.tech
