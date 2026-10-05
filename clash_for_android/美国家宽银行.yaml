@@ -156,6 +156,14 @@ dns:
   proxy-server-nameserver:
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
+  # 机场专属节点域名(911-gt2-rs.com/dirvt.com)走机场指定DoH，其余节点域名走上面的阿里/腾讯DoH
+  proxy-server-nameserver-policy:
+    '+.911-gt2-rs.com':
+      - https://zone.rlose.com:39933/api-query
+      - https://radar.rlose.com/api-query
+    '+.dirvt.com':
+      - https://zone.rlose.com:39933/api-query
+      - https://radar.rlose.com/api-query
   nameserver-policy:
     "RULE-SET:No-ads-all_域":
       - rcode://success
@@ -731,6 +739,22 @@ rule-providers:
     path: ./rules/usbank-hashomenet.list
     url: "https://raw.githubusercontent.com/luckywaa/USBANKS-rules/refs/heads/main/Clash/usbank-hashomenet.list"
 
+  美国银行_家宽或国内:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rules/usbank-ushomeORchineseip.list
+    url: "https://raw.githubusercontent.com/luckywaa/USBANKS-rules/refs/heads/main/Clash/usbank-ushomeORchineseip.list"
+
+  美国银行_中国IP:
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+    path: ./rules/usbank-chineseip.list
+    url: "https://raw.githubusercontent.com/luckywaa/USBANKS-rules/refs/heads/main/Clash/usbank-chineseip.list"
+
   香港银行_中国IP:
     type: http
     behavior: classical
@@ -756,6 +780,7 @@ rules:
   - DOMAIN,time.is,🇨🇳 本地直连
   - DOMAIN-SUFFIX,pool.ntp.org,🇨🇳 本地直连
   - RULE-SET,香港银行_中国IP,🇨🇳 本地直连
+  - RULE-SET,美国银行_中国IP,🇨🇳 本地直连
 
   # -------- 独立/特定分流规则 --------
   # --- PikPak--
@@ -808,6 +833,7 @@ rules:
   - RULE-SET,Crypto,Crypto
   - RULE-SET,PayPal,PayPal
   - RULE-SET,美国银行_域,美国银行
+  - RULE-SET,美国银行_家宽或国内,美国银行
 
   # -------- 本地网络规则 --------
   - RULE-SET,Private_域,🇨🇳 本地直连
