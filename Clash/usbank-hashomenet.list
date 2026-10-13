@@ -81,3 +81,6 @@ DOMAIN-SUFFIX,refersion.com
 
 #twitter-xmoney
 DOMAIN-SUFFIX,twitter.com
+
+#paypal
+DOMAIN-SUFFIX,paypal.com
