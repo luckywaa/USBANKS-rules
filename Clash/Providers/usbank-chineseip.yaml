@@ -16,3 +16,10 @@ payload:
   - DOMAIN-SUFFIX,duotai.tech
   # UA-防止换IP封号的情况
   - DOMAIN-SUFFIX,united.com
+  # 酒店wifi登陆页面
+  - DOMAIN,connectivitycheck.gstatic.com
+  - DOMAIN-SUFFIX,msftconnecttest.com
+  - DOMAIN-SUFFIX,msftncsi.com
+  - DOMAIN,captive.apple.com
+  - DOMAIN,connect.rom.miui.com
+  - DOMAIN,connectivitycheck.platform.hicloud.com
