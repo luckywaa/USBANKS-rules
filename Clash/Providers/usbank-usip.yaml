@@ -67,3 +67,5 @@ payload:
   #twitter-xmoney
   - DOMAIN-SUFFIX,twitter.com
   - DOMAIN-SUFFIX,x.com
+  #credit.com
+  - DOMAIN-SUFFIX,credit.com
