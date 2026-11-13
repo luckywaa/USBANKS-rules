@@ -45,7 +45,9 @@ DOMAIN-SUFFIX,pokeapi.co
 DOMAIN-SUFFIX,joinfizz.com
 DOMAIN-SUFFIX,ally.com
 DOMAIN-SUFFIX,rakuten.com
+#ihg
 DOMAIN-SUFFIX,ihg.com
+DOMAIN-SUFFIX,tkqlhce.com
 # 红包卡wifi-calling
 DOMAIN-SUFFIX,epdg.epc.att.net
 DOMAIN-SUFFIX,epdg.epc.att-idns.net
