@@ -76,3 +76,6 @@ DOMAIN-SUFFIX,x.com
 
 #credit.com
 DOMAIN-SUFFIX,credit.com
+
+#virtualbrowser利用ip定位
+DOMAIN-SUFFIX,vbhub.net
