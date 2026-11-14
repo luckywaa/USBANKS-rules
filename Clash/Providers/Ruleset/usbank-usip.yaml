@@ -74,3 +74,4 @@ payload:
   - DOMAIN-SUFFIX,credit.com
   #virtualbrowser利用ip定位
   - DOMAIN-SUFFIX,vbhub.net
+  - DOMAIN-SUFFIX,virtualbrowser.cc
