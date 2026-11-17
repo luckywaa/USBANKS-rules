@@ -1,0 +1,9 @@
+payload:
+  #ihg
+  - DOMAIN-SUFFIX,ihg.com
+  - DOMAIN-SUFFIX,tkqlhce.com
+  - DOMAIN-SUFFIX,emjcd.com
+  #cloudflare
+  - DOMAIN-SUFFIX,cloudflare.com
+  #maoxing.ren
+  - DOMAIN,ihg.maoxing.ren
