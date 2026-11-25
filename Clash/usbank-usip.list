@@ -62,6 +62,7 @@ DOMAIN-SUFFIX,trefis.com
 DOMAIN-SUFFIX,usbank.com
 #gv稳定性
 DOMAIN-SUFFIX,google.com
+DOMAIN-SUFFIX,goog
 
 #redpocket
 DOMAIN-SUFFIX,redpocket.com
